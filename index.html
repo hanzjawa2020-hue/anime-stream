@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnimeStream</title>
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box}
+    body{background:#0f0f0f;color:#fff;font-family:Arial,sans-serif}
+    header{padding:15px;background:#1a1a1a;position:sticky;top:0;z-index:10}
+    h1{font-size:20px;margin-bottom:10px;color:#e50914}
+    #search{width:100%;padding:10px;border:none;border-radius:5px;background:#333;color:#fff}
+    #anime-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px;padding:15px}
+    .anime-card{background:#1a1a1a;border-radius:8px;overflow:hidden;cursor:pointer}
+    .anime-card img{width:100%;height:200px;object-fit:cover}
+    .anime-card h3{padding:10px;font-size:14px}
+    .loading{text-align:center;padding:20px;color:#888}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AnimeStream</h1>
+    <input type="text" id="search" placeholder="Cari anime...">
+  </header>
+  <main id="anime-list"><div class="loading">Loading...</div></main>
+
+  <script>
+    const API_URL = 'https://api.anify.tv/';
+    const listEl = document.getElementById('anime-list');
+    const searchEl = document.getElementById('search');
+
+    async function getAnime(query = '') {
+      listEl.innerHTML = '<div class="loading">Loading...</div>';
+      try {
+        const url = query 
+          ? `${API_URL}search?q=${encodeURIComponent(query)}`
+          : `${API_URL}popular`;
+        const res = await fetch(url);
+        const data = await res.json();
+        showAnime(data);
+      } catch (err) {
+        listEl.innerHTML = '<div class="loading">Gagal load API</div>';
+      }
+    }
+
+    function showAnime(data) {
+      listEl.innerHTML = '';
+      const animes = data.results || data;
+      animes.slice(0, 20).forEach(anime => {
+        const card = document.createElement('div');
+        card.className = 'anime-card';
+        card.innerHTML = `
+          <img src="${anime.coverImage || anime.image}" alt="${anime.title.english || anime.title.romaji}">
+          <h3>${anime.title.english || anime.title.romaji}</h3>
+        `;
+        card.onclick = () => alert('Fitur play nyusul');
+        listEl.appendChild(card);
+      });
+    }
+
+    searchEl.addEventListener('input', (e) => {
+      if(e.target.value.length > 2) getAnime(e.target.value);
+      if(e.target.value.length === 0) getAnime();
+    });
+
+    getAnime();
+  </script>
+</body>
+</html>
